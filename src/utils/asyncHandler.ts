@@ -4,6 +4,6 @@ type AsyncFunction = (req: Request, res: Response, next: NextFunction) => Promis
 
 export const asyncHandler = (fn: AsyncFunction) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
+    return Promise.resolve().then(() => fn(req, res, next)).catch(next);
   };
 };

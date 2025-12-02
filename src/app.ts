@@ -33,7 +33,9 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Rate limiting
-app.use('/api', apiRateLimiter);
+if (process.env.NODE_ENV !== 'test') {
+    app.use('/api', apiRateLimiter);
+}
 
 // Mount API routes
 app.use('/api', routes);
