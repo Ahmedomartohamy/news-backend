@@ -3,7 +3,8 @@ import { ArticleStatus } from '@prisma/client';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ApiError } from '../utils/ApiError';
 import articleService from '../services/articleService';
-import { CreateArticleRequest, UpdateArticleRequest, ArticleFilters, PaginationQuery } from '../types/requests';
+import { CreateArticleInput, UpdateArticleInput } from '../schemas/article.schema';
+import { ArticleFilters, PaginationQuery } from '../types/requests';
 
 /**
  * Get all articles with filters
@@ -85,7 +86,7 @@ export const createArticle = asyncHandler(async (req: Request, res: Response) =>
         throw new ApiError(401, 'Not authenticated');
     }
 
-    const data: CreateArticleRequest = req.body;
+    const data: CreateArticleInput = req.body;
 
     const article = await articleService.createArticle(data, req.user.id);
 
@@ -110,7 +111,7 @@ export const updateArticle = asyncHandler(async (req: Request, res: Response) =>
     }
 
     const id = parseInt(req.params.id);
-    const data: UpdateArticleRequest = req.body;
+    const data: UpdateArticleInput = req.body;
 
     const article = await articleService.updateArticle(id, data, req.user.id, req.user.role);
 

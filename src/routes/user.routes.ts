@@ -1,9 +1,14 @@
 import { Router } from 'express';
-import { body, param } from 'express-validator';
 import * as userController from '../controllers/userController';
 import { authenticate } from '../middleware/auth';
 import { requireAdmin } from '../middleware/roleCheck';
 import { validate } from '../middleware/validate';
+import {
+  createUserSchema,
+  updateUserSchema,
+  changeRoleSchema,
+  userParamsSchema,
+} from '../schemas/user.schema';
 
 const router = Router();
 
@@ -24,8 +29,7 @@ router.get('/', userController.getAllUsers);
  */
 router.get(
   '/:id',
-  [param('id').isInt().withMessage('Invalid user ID')],
-  validate,
+  validate(userParamsSchema, 'params'),
   userController.getUserById
 );
 
@@ -36,18 +40,7 @@ router.get(
  */
 router.post(
   '/',
-  [
-    body('email').isEmail().withMessage('Please provide a valid email'),
-    body('password')
-      .isLength({ min: 8 })
-      .withMessage('Password must be at least 8 characters long'),
-    body('name').notEmpty().withMessage('Name is required'),
-    body('role')
-      .optional()
-      .isIn(['ADMIN', 'EDITOR', 'AUTHOR'])
-      .withMessage('Invalid role'),
-  ],
-  validate,
+  validate(createUserSchema, 'body'),
   userController.createUser
 );
 
@@ -58,13 +51,8 @@ router.post(
  */
 router.put(
   '/:id',
-  [
-    param('id').isInt().withMessage('Invalid user ID'),
-    body('name').optional().notEmpty().withMessage('Name cannot be empty'),
-    body('bio').optional().isLength({ max: 500 }).withMessage('Bio must be less than 500 characters'),
-    body('avatarUrl').optional().isURL().withMessage('Avatar URL must be a valid URL'),
-  ],
-  validate,
+  validate(userParamsSchema, 'params'),
+  validate(updateUserSchema, 'body'),
   userController.updateUser
 );
 
@@ -75,13 +63,8 @@ router.put(
  */
 router.patch(
   '/:id/role',
-  [
-    param('id').isInt().withMessage('Invalid user ID'),
-    body('role')
-      .isIn(['ADMIN', 'EDITOR', 'AUTHOR'])
-      .withMessage('Invalid role'),
-  ],
-  validate,
+  validate(userParamsSchema, 'params'),
+  validate(changeRoleSchema, 'body'),
   userController.changeUserRole
 );
 
@@ -92,8 +75,7 @@ router.patch(
  */
 router.patch(
   '/:id/deactivate',
-  [param('id').isInt().withMessage('Invalid user ID')],
-  validate,
+  validate(userParamsSchema, 'params'),
   userController.deactivateUser
 );
 
@@ -104,8 +86,7 @@ router.patch(
  */
 router.patch(
   '/:id/activate',
-  [param('id').isInt().withMessage('Invalid user ID')],
-  validate,
+  validate(userParamsSchema, 'params'),
   userController.activateUser
 );
 
@@ -116,8 +97,7 @@ router.patch(
  */
 router.delete(
   '/:id',
-  [param('id').isInt().withMessage('Invalid user ID')],
-  validate,
+  validate(userParamsSchema, 'params'),
   userController.deleteUser
 );
 

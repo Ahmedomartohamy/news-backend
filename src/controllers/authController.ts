@@ -3,14 +3,14 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { ApiError } from '../utils/ApiError';
 import userService from '../services/userService';
 import { generateToken, generateRefreshToken } from '../config/jwt';
-import { RegisterRequest, LoginRequest } from '../types/requests';
+import { RegisterInput, LoginInput, UpdateProfileInput, ChangePasswordInput } from '../schemas/auth.schema';
 
 /**
  * Register a new user
  * POST /api/auth/register
  */
 export const register = asyncHandler(async (req: Request, res: Response) => {
-    const data: RegisterRequest = req.body;
+    const data: RegisterInput = req.body;
 
     const user = await userService.createUser(data);
 
@@ -43,7 +43,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
  * POST /api/auth/login
  */
 export const login = asyncHandler(async (req: Request, res: Response) => {
-    const { email, password }: LoginRequest = req.body;
+    const { email, password }: LoginInput = req.body;
 
     // Get user with password
     const user = await userService.getUserByEmail(email);
@@ -117,7 +117,7 @@ export const updateProfile = asyncHandler(async (req: Request, res: Response) =>
         throw new ApiError(401, 'Not authenticated');
     }
 
-    const { name, bio, avatarUrl } = req.body;
+    const { name, bio, avatarUrl }: UpdateProfileInput = req.body;
 
     const user = await userService.updateUser(req.user.id, {
         name,
@@ -141,7 +141,7 @@ export const changePassword = asyncHandler(async (req: Request, res: Response) =
         throw new ApiError(401, 'Not authenticated');
     }
 
-    const { oldPassword, newPassword } = req.body;
+    const { oldPassword, newPassword }: ChangePasswordInput = req.body;
 
     const result = await userService.changePassword(req.user.id, oldPassword, newPassword);
 

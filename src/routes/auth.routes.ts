@@ -1,9 +1,14 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
 import * as authController from '../controllers/authController';
 import { authenticate } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { authRateLimiter } from '../middleware/rateLimiter';
+import {
+  registerSchema,
+  loginSchema,
+  updateProfileSchema,
+  changePasswordSchema,
+} from '../schemas/auth.schema';
 
 const router = Router();
 
@@ -15,14 +20,7 @@ const router = Router();
 router.post(
   '/register',
   authRateLimiter,
-  [
-    body('email').isEmail().withMessage('Please provide a valid email'),
-    body('password')
-      .isLength({ min: 8 })
-      .withMessage('Password must be at least 8 characters long'),
-    body('name').notEmpty().withMessage('Name is required'),
-  ],
-  validate,
+  validate(registerSchema, 'body'),
   authController.register
 );
 
@@ -34,11 +32,7 @@ router.post(
 router.post(
   '/login',
   authRateLimiter,
-  [
-    body('email').isEmail().withMessage('Please provide a valid email'),
-    body('password').notEmpty().withMessage('Password is required'),
-  ],
-  validate,
+  validate(loginSchema, 'body'),
   authController.login
 );
 
@@ -57,12 +51,7 @@ router.get('/me', authenticate, authController.getCurrentUser);
 router.put(
   '/me',
   authenticate,
-  [
-    body('name').optional().notEmpty().withMessage('Name cannot be empty'),
-    body('bio').optional().isLength({ max: 500 }).withMessage('Bio must be less than 500 characters'),
-    body('avatarUrl').optional().isURL().withMessage('Avatar URL must be a valid URL'),
-  ],
-  validate,
+  validate(updateProfileSchema, 'body'),
   authController.updateProfile
 );
 
@@ -74,13 +63,7 @@ router.put(
 router.put(
   '/change-password',
   authenticate,
-  [
-    body('oldPassword').notEmpty().withMessage('Current password is required'),
-    body('newPassword')
-      .isLength({ min: 8 })
-      .withMessage('New password must be at least 8 characters long'),
-  ],
-  validate,
+  validate(changePasswordSchema, 'body'),
   authController.changePassword
 );
 

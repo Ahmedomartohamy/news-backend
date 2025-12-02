@@ -1,9 +1,13 @@
 import { Router } from 'express';
-import { body, param } from 'express-validator';
 import * as articleController from '../controllers/articleController';
 import { authenticate, optionalAuthenticate } from '../middleware/auth';
 import { requireAuthor } from '../middleware/roleCheck';
 import { validate } from '../middleware/validate';
+import {
+  createArticleSchema,
+  updateArticleSchema,
+  articleParamsSchema,
+} from '../schemas/article.schema';
 
 const router = Router();
 
@@ -35,8 +39,7 @@ router.get('/:slug', optionalAuthenticate, articleController.getArticleBySlug);
  */
 router.get(
   '/:id/related',
-  [param('id').isInt().withMessage('Invalid article ID')],
-  validate,
+  validate(articleParamsSchema, 'params'),
   articleController.getRelatedArticles
 );
 
@@ -49,19 +52,7 @@ router.post(
   '/',
   authenticate,
   requireAuthor,
-  [
-    body('title').notEmpty().withMessage('Title is required'),
-    body('content').notEmpty().withMessage('Content is required'),
-    body('excerpt').optional().isLength({ max: 500 }).withMessage('Excerpt must be less than 500 characters'),
-    body('featuredImage').optional().isURL().withMessage('Featured image must be a valid URL'),
-    body('categoryId').isInt().withMessage('Category ID must be a number'),
-    body('tagIds').optional().isArray().withMessage('Tag IDs must be an array'),
-    body('status')
-      .optional()
-      .isIn(['DRAFT', 'PUBLISHED', 'ARCHIVED'])
-      .withMessage('Invalid status'),
-  ],
-  validate,
+  validate(createArticleSchema, 'body'),
   articleController.createArticle
 );
 
@@ -74,20 +65,8 @@ router.put(
   '/:id',
   authenticate,
   requireAuthor,
-  [
-    param('id').isInt().withMessage('Invalid article ID'),
-    body('title').optional().notEmpty().withMessage('Title cannot be empty'),
-    body('content').optional().notEmpty().withMessage('Content cannot be empty'),
-    body('excerpt').optional().isLength({ max: 500 }).withMessage('Excerpt must be less than 500 characters'),
-    body('featuredImage').optional().isURL().withMessage('Featured image must be a valid URL'),
-    body('categoryId').optional().isInt().withMessage('Category ID must be a number'),
-    body('tagIds').optional().isArray().withMessage('Tag IDs must be an array'),
-    body('status')
-      .optional()
-      .isIn(['DRAFT', 'PUBLISHED', 'ARCHIVED'])
-      .withMessage('Invalid status'),
-  ],
-  validate,
+  validate(articleParamsSchema, 'params'),
+  validate(updateArticleSchema, 'body'),
   articleController.updateArticle
 );
 
@@ -100,8 +79,7 @@ router.patch(
   '/:id/publish',
   authenticate,
   requireAuthor,
-  [param('id').isInt().withMessage('Invalid article ID')],
-  validate,
+  validate(articleParamsSchema, 'params'),
   articleController.publishArticle
 );
 
@@ -114,8 +92,7 @@ router.patch(
   '/:id/archive',
   authenticate,
   requireAuthor,
-  [param('id').isInt().withMessage('Invalid article ID')],
-  validate,
+  validate(articleParamsSchema, 'params'),
   articleController.archiveArticle
 );
 
@@ -128,8 +105,7 @@ router.delete(
   '/:id',
   authenticate,
   requireAuthor,
-  [param('id').isInt().withMessage('Invalid article ID')],
-  validate,
+  validate(articleParamsSchema, 'params'),
   articleController.deleteArticle
 );
 

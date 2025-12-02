@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ApiError } from '../utils/ApiError';
 import categoryService from '../services/categoryService';
-import { CreateCategoryRequest } from '../types/requests';
+import { CreateCategoryInput, UpdateCategoryInput } from '../schemas/category.schema';
 
 /**
  * Get all categories
@@ -75,7 +75,7 @@ export const getArticlesByCategory = asyncHandler(async (req: Request, res: Resp
  * POST /api/categories
  */
 export const createCategory = asyncHandler(async (req: Request, res: Response) => {
-    const data: CreateCategoryRequest = req.body;
+    const data: CreateCategoryInput = req.body;
 
     const category = await categoryService.createCategory(data);
 
@@ -96,7 +96,7 @@ export const updateCategory = asyncHandler(async (req: Request, res: Response) =
     }
 
     const id = parseInt(req.params.id);
-    const { name, description, parentId } = req.body;
+    const { name, description, parentId }: UpdateCategoryInput = req.body;
 
     const category = await categoryService.updateCategory(id, {
         name,

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ApiError } from '../utils/ApiError';
 import tagService from '../services/tagService';
-import { CreateTagRequest } from '../types/requests';
+import { CreateTagInput, UpdateTagInput } from '../schemas/tag.schema';
 
 /**
  * Get all tags
@@ -77,7 +77,7 @@ export const getArticlesByTag = asyncHandler(async (req: Request, res: Response)
  * POST /api/tags
  */
 export const createTag = asyncHandler(async (req: Request, res: Response) => {
-    const data: CreateTagRequest = req.body;
+    const data: CreateTagInput = req.body;
 
     const tag = await tagService.createTag(data);
 
@@ -98,7 +98,7 @@ export const updateTag = asyncHandler(async (req: Request, res: Response) => {
     }
 
     const id = parseInt(req.params.id);
-    const { name } = req.body;
+    const { name }: UpdateTagInput = req.body;
 
     const tag = await tagService.updateTag(id, { name });
 

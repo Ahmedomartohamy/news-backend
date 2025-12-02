@@ -1,9 +1,13 @@
 import { Router } from 'express';
-import { body, param } from 'express-validator';
 import * as tagController from '../controllers/tagController';
 import { authenticate } from '../middleware/auth';
 import { requireAdmin, requireAuthor } from '../middleware/roleCheck';
 import { validate } from '../middleware/validate';
+import {
+  createTagSchema,
+  updateTagSchema,
+  tagParamsSchema,
+} from '../schemas/tag.schema';
 
 const router = Router();
 
@@ -16,8 +20,7 @@ router.post(
   '/',
   authenticate,
   requireAuthor,
-  [body('name').notEmpty().withMessage('Name is required')],
-  validate,
+  validate(createTagSchema, 'body'),
   tagController.createTag
 );
 
@@ -25,11 +28,8 @@ router.put(
   '/:id',
   authenticate,
   requireAdmin,
-  [
-    param('id').isInt().withMessage('Invalid tag ID'),
-    body('name').notEmpty().withMessage('Name is required'),
-  ],
-  validate,
+  validate(tagParamsSchema, 'params'),
+  validate(updateTagSchema, 'body'),
   tagController.updateTag
 );
 
@@ -37,8 +37,7 @@ router.delete(
   '/:id',
   authenticate,
   requireAdmin,
-  [param('id').isInt().withMessage('Invalid tag ID')],
-  validate,
+  validate(tagParamsSchema, 'params'),
   tagController.deleteTag
 );
 

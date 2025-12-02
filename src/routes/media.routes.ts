@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { param } from 'express-validator';
 import * as mediaController from '../controllers/mediaController';
 import { authenticate } from '../middleware/auth';
 import { uploadSingle, uploadMultiple } from '../middleware/upload';
 import { uploadRateLimiter } from '../middleware/rateLimiter';
 import { validate } from '../middleware/validate';
+import { mediaParamsSchema } from '../schemas/media.schema';
 
 const router = Router();
 
@@ -17,8 +17,7 @@ router.get('/my-uploads', mediaController.getMyMedia);
 
 router.get(
   '/:id',
-  [param('id').isInt().withMessage('Invalid media ID')],
-  validate,
+  validate(mediaParamsSchema, 'params'),
   mediaController.getMediaById
 );
 
@@ -33,8 +32,7 @@ router.post(
 
 router.delete(
   '/:id',
-  [param('id').isInt().withMessage('Invalid media ID')],
-  validate,
+  validate(mediaParamsSchema, 'params'),
   mediaController.deleteMedia
 );
 

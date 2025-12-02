@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ApiError } from '../utils/ApiError';
 import userService from '../services/userService';
+import { CreateUserInput, UpdateUserInput, ChangeRoleInput } from '../schemas/user.schema';
 import { PaginationQuery } from '../types/requests';
 
 /**
@@ -47,7 +48,7 @@ export const getUserById = asyncHandler(async (req: Request, res: Response) => {
  * POST /api/users
  */
 export const createUser = asyncHandler(async (req: Request, res: Response) => {
-    const { email, password, name, role } = req.body;
+    const { email, password, name, role }: CreateUserInput = req.body;
 
     const user = await userService.createUser({
         email,
@@ -73,7 +74,7 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
     }
 
     const id = parseInt(req.params.id);
-    const { name, bio, avatarUrl } = req.body;
+    const { name, bio, avatarUrl }: UpdateUserInput = req.body;
 
     const user = await userService.updateUser(id, {
         name,
@@ -98,7 +99,7 @@ export const changeUserRole = asyncHandler(async (req: Request, res: Response) =
     }
 
     const id = parseInt(req.params.id);
-    const { role } = req.body;
+    const { role }: ChangeRoleInput = req.body;
 
     const user = await userService.changeUserRole(id, role);
 

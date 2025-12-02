@@ -1,41 +1,54 @@
 import { Request, Response, NextFunction } from 'express';
-import { validationResult, ValidationChain } from 'express-validator';
+import { ZodSchema } from 'zod';
 
 /**
- * Validation middleware
- * Checks validation results from express-validator
+ * Validation source type
  */
-export const validate = (req: Request, res: Response, next: NextFunction): void => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-        const errorMessages = errors.array().map((error) => ({
-            field: error.type === 'field' ? error.path : 'unknown',
-            message: error.msg,
-        }));
-
-        res.status(400).json({
-            success: false,
-            error: 'Validation failed',
-            details: errorMessages,
-        });
-        return;
-    }
-
-    next();
-};
+type ValidationSource = 'body' | 'params' | 'query';
 
 /**
- * Wrapper to run validation chains and then validate
+ * Zod validation middleware
+ * Validates request data against a Zod schema
  */
-export const validateRequest = (validations: ValidationChain[]) => {
-    return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-        // Run all validations
-        for (const validation of validations) {
-            await validation.run(req);
+export const validate = (schema: ZodSchema, source: ValidationSource = 'body') => {
+    return (req: Request, res: Response, next: NextFunction): void => {
+        try {
+            // Get the data to validate based on source
+            const dataToValidate = req[source];
+
+            // Parse and validate the data
+            const result = schema.safeParse(dataToValidate);
+
+            if (!result.success) {
+                // Format Zod errors into our unified error format
+                const errors = result.error.issues.map((issue) => ({
+                    field: issue.path.join('.'),
+                    message: issue.message,
+                }));
+
+                res.status(400).json({
+                    status: 'error',
+                    errors,
+                });
+                return;
+            }
+
+            // Replace the original data with the validated and parsed data
+            // This ensures type safety and applies any transformations
+            req[source] = result.data;
+
+            next();
+        } catch (error) {
+            // Handle unexpected errors
+            res.status(500).json({
+                status: 'error',
+                errors: [
+                    {
+                        field: 'unknown',
+                        message: 'An unexpected error occurred during validation',
+                    },
+                ],
+            });
         }
-
-        // Check for errors
-        validate(req, res, next);
     };
 };

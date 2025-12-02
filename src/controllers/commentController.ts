@@ -3,7 +3,8 @@ import { CommentStatus } from '@prisma/client';
 import { asyncHandler } from '../utils/asyncHandler';
 import { ApiError } from '../utils/ApiError';
 import commentService from '../services/commentService';
-import { CreateCommentRequest, PaginationQuery } from '../types/requests';
+import { CreateCommentInput, UpdateCommentInput } from '../schemas/comment.schema';
+import { PaginationQuery } from '../types/requests';
 
 /**
  * Get all comments (Admin only)
@@ -79,7 +80,7 @@ export const getCommentById = asyncHandler(async (req: Request, res: Response) =
  * POST /api/comments
  */
 export const createComment = asyncHandler(async (req: Request, res: Response) => {
-  const data: CreateCommentRequest = req.body;
+  const data: CreateCommentInput = req.body;
   const userId = req.user?.id;
 
   const comment = await commentService.createComment(data, userId);
@@ -105,7 +106,7 @@ export const updateComment = asyncHandler(async (req: Request, res: Response) =>
   }
 
   const id = parseInt(req.params.id);
-  const { content } = req.body;
+  const { content }: UpdateCommentInput = req.body;
 
   const comment = await commentService.updateComment(id, { content }, req.user.id, req.user.role);
 
